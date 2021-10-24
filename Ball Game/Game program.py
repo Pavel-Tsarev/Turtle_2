@@ -71,8 +71,8 @@ while not finished:
                 Vx2 = randint(-15, 15)
                 Vy2 = randint(-15, 15)
     new_ball(x1, y1, r1)
-    x1 = x1 + k1*Vx1
-    y1 = y1 + l1*Vy1
+    x1 = x1 + Vx1
+    y1 = y1 + Vy1
     if (x1 + r1 >= 600):                                 #первый шар отражается от стенок
         Vx1 = -1*Vx1
         x1 = x1 - 10
@@ -86,8 +86,8 @@ while not finished:
         l1 = -1*Vy1
         y1 = y1 + 10
     new_ball(x2, y2, r2)
-    x2 = x2 + k2 * Vx2
-    y2 = y2 + l2 * Vy2
+    x2 = x2 + Vx2
+    y2 = y2 + Vy2
     if (x2 + r2 >= 600):                                 #второй шар отражается от стенок
         Vx2 = -1 * Vx2
         x2 = x2 - 10
