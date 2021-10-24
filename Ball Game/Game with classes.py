@@ -29,6 +29,39 @@ CYAN = (0, 255, 255)
 BLACK = (0, 0, 0)
 COLORS = [RED, BLUE, YELLOW, GREEN, MAGENTA, CYAN]
 
+class Ball:
+    def __init__ (self, x, y, Vx, Vy, r, color):
+        self.x = x
+        self.y = y
+        self.Vx = Vx
+        self.Vy = Vy
+        self.r = r
+        self.color = color
+
+    def move(self):
+        circle(screen, BLACK, (self.x, self.y), self.r)
+        self.x = self.x + self.Vx
+        self.y = self.y + self.Vy
+        color = COLORS[1]
+        circle(screen, color, (self.x, self.y), self.r)
+
+    def collision_wall(self):
+        if (self.x + self.r >= 600):
+            self.Vx = -1 * self.Vx
+            self.x = self.x - 10
+        if (self.x - self.r <= 0):
+            self.Vx = -1 * self.Vx
+            self.x = self.x + 10
+        if (self.y + self.r >= 450):
+            self.Vy = -1 * self.Vy
+            self.y = self.y - 10
+        if (self.y - self.r <= 50):
+            self.Vy = -1 * self.Vy
+            self.y = self.y + 10
+
+    def ball_click(x0, y0):
+
+
 def new_ball(x, y, r):
     '''
     рисует шарик заданного радиуса в указанной точке
@@ -83,7 +116,7 @@ while not finished:
         Vy1 = -1*Vy1
         y1 = y1 - 10
     if (y1 - r1 <= 50):
-        Vy1 = -1*Vy1
+        l1 = -1*Vy1
         y1 = y1 + 10
     new_ball(x2, y2, r2)
     x2 = x2 + Vx2
