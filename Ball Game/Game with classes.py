@@ -1,6 +1,5 @@
 import pygame
 import numpy as np
-import sys
 from pygame.draw import *
 from random import randint
 
@@ -8,26 +7,17 @@ pygame.font.init()
 pygame.init()
 
 FPS = 30
-screen = pygame.display.set_mode((600, 450))
+screen = pygame.display.set_mode((900, 700))
 score = 0
-x1 = randint(50, 550)
-x2 = randint(50, 550)
-y1 = randint(100, 400)
-y2 = randint(100, 400)
-r1 = randint(15, 30)
-r2 = randint(15, 50)
-Vx1 = randint(-15, 15)
-Vx2 = randint(-15, 15)
-Vy1 = randint(-15, 15)
-Vy2 = randint(-15, 15)
-RED = (255, 0, 0)
+time_live = 347
+GREY = (127, 127, 127)
 BLUE = (0, 0, 255)
 YELLOW = (255, 255, 0)
 GREEN = (0, 255, 0)
 MAGENTA = (255, 0, 255)
 CYAN = (0, 255, 255)
 BLACK = (0, 0, 0)
-COLORS = [RED, BLUE, YELLOW, GREEN, MAGENTA, CYAN]
+COLORS = [GREY, BLUE, YELLOW, GREEN, MAGENTA, CYAN]
 
 
 class Ball:
@@ -44,37 +34,47 @@ class Ball:
         self.x = self.x + self.Vx
         self.y = self.y + self.Vy
         circle(screen, self.color, (self.x, self.y), self.r)
+        circle(screen, (100, 100, 255), (self.x, self.y), 5*self.r/7)
+        circle(screen, (255, 0, 0), (self.x, self.y), 3*self.r/7)
 
     def collision_wall(self):
-        if self.x + self.r >= 600:
+        if self.x + self.r >= 900:
             self.Vx = -1 * self.Vx
             self.x = self.x - 10
         if self.x - self.r <= 0:
             self.Vx = -1 * self.Vx
             self.x = self.x + 10
-        if self.y + self.r >= 450:
+        if self.y + self.r >= 700:
             self.Vy = -1 * self.Vy
             self.y = self.y - 10
         if self.y - self.r <= 50:
             self.Vy = -1 * self.Vy
             self.y = self.y + 10
 
-    def ball_click(self, x0, y0):
+    def ball_click(self, mouse_x, mouse_y):
         global score
-        if (np.abs(x0 - self.x) <= self.r) and (np.abs(y0 - self.y) <= self.r):
-            self.x = randint(50, 550)
-            self.y = randint(100, 400)
-            self.r = randint(15, 50)
+        if (np.abs(mouse_x - self.x) <= self.r) and (np.abs(mouse_y - self.y) <= self.r):
+            score = score + 1
+            if (np.abs(mouse_x - self.x) <= self.r) and (np.abs(mouse_y - self.y) <= 5*self.r/7):
+                score = score + 1
+                if (np.abs(mouse_x - self.x) <= self.r) and (np.abs(mouse_y - self.y) <= 3*self.r/7):
+                    score = score + 1
+            self.x = randint(50, 900)
+            self.y = randint(100, 650)
+            self.r = randint(20, 50)
             self.Vx = randint(-15, 15)
             self.Vy = randint(-15, 15)
             self.color = COLORS[randint(0, 5)]
             print('Попався!')
-            score = score + 1
 
-ball_one = Ball(x1, y1, Vx1, Vy1, r1, COLORS[0])
 
-def draw_ball(x, y, r):
-    circle(screen, COLORS[3], (x, y), r)
+ball_one = Ball(randint(50, 850), randint(100, 650), randint(-15, 15), randint(-15, 15), randint(20, 50), COLORS[0])
+ball_two = Ball(randint(50, 850), randint(100, 650), randint(-15, 15), randint(-15, 15), randint(20, 50), COLORS[1])
+ball_three = Ball(randint(50, 850), randint(100, 650), randint(-15, 15), randint(-15, 15), randint(20, 50), COLORS[2])
+ball_four = Ball(randint(50, 850), randint(100, 650), randint(-15, 15), randint(-15, 15), randint(20, 50), COLORS[3])
+ball_five = Ball(randint(50, 850), randint(100, 650), randint(-15, 15), randint(-15, 15), randint(20, 50), COLORS[4])
+ball_six = Ball(randint(50, 850), randint(100, 650), randint(-15, 15), randint(-15, 15), randint(20, 50), COLORS[5])
+LIST_BALLS = [ball_one, ball_two, ball_three, ball_four, ball_five, ball_six]
 
 pygame.display.update()
 clock = pygame.time.Clock()
@@ -83,40 +83,26 @@ finished = False
 while not finished:
     clock.tick(FPS)
     f = pygame.font.Font(None, 36)
-    text = f.render('Score: ' + str(score), 1, (180, 0, 0))
-    screen.blit(text, (280, 20))
+    text = f.render('Score: ' + str(score) + '  Time: ', True, (180, 0, 0))
+    screen.blit(text, (220, 20))
+    polygon(screen, (180, 0, 0), [(500, 20), (850, 20), (850, 40), (500, 40)])
+    polygon(screen, (0, 0, 0), [(502, 22), (847, 22), (847, 38), (502, 38)])
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             finished = True
         elif event.type == pygame.MOUSEBUTTONDOWN:
-            x0 = event.pos[0]
-            y0 = event.pos[1]
-            ball_one.ball_click(x0, y0)
-            if (np.abs(x0 - x2) <= r2) and (np.abs(y0 - y2) <= r2):
-                print('Попався!')
-                score = score + 1
-                x2 = randint(50, 550)
-                y2 = randint(100, 400)
-                r2 = randint(15, 50)
-                Vx2 = randint(-15, 15)
-                Vy2 = randint(-15, 15)
-    ball_one.move()
-    ball_one.collision_wall()
-    draw_ball(x2, y2, r2)
-    x2 = x2 + Vx2
-    y2 = y2 + Vy2
-    if (x2 + r2 >= 600):
-        Vx2 = -1 * Vx2
-        x2 = x2 - 10
-    if (x2 - r2 <= 0):
-        Vx2 = -1 * Vx2
-        x2 = x2 + 10
-    if (y2 + r2 >= 450):
-        Vy2 = -1 * Vy2
-        y2 = y2 - 10
-    if (y2 - r2 <= 50):
-        Vy2 = -1 * Vy2
-        y2 = y2 + 10
+            mouse_x = event.pos[0]
+            mouse_y = event.pos[1]
+            for i in range(6):
+                LIST_BALLS[i].ball_click(mouse_x, mouse_y)
+    for i in range(6):
+        LIST_BALLS[i].move()
+        LIST_BALLS[i].collision_wall()
+    time_live = time_live - 1
+    polygon(screen, (180, 0, 0), [(502, 22), (502 + time_live, 22), (502 + time_live, 38), (500, 38)])
+    if time_live <= 0:
+        finished = True
+        print('Игра закончена. Ваш результат: ', score)
     pygame.display.update()
     screen.fill(BLACK)
 pygame.quit()
