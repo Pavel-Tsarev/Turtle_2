@@ -23,7 +23,7 @@ out = open('Table of records (for players).txt', 'w')
 Stroka = []
 for i in range(15):
     Stroka.append(inp.readline())
-print(Stroka[1])
+
 
 class Ball:
     def __init__(self, x, y, Vx, Vy, r, color):
@@ -68,12 +68,18 @@ class Ball:
 
     def ball_click(self, mouse_x, mouse_y):
         global score
+        global time_live
         if (np.abs(mouse_x - self.x) <= self.r) and (np.abs(mouse_y - self.y) <= self.r):
             score = score + 1
+            time_live = time_live + 5
             if (np.abs(mouse_x - self.x) <= self.r) and (np.abs(mouse_y - self.y) <= 5*self.r/7):
                 score = score + 1
+                time_live = time_live + 5
                 if (np.abs(mouse_x - self.x) <= self.r) and (np.abs(mouse_y - self.y) <= 3*self.r/7):
                     score = score + 1
+                    time_live = time_live + 5
+            if time_live >= 438:
+                time_live = 437
             self.x = randint(50, 900)
             self.y = randint(100, 650)
             self.r = randint(20, 50)
@@ -81,6 +87,28 @@ class Ball:
             self.Vy = randint(-15, 15)
             self.color = COLORS[randint(0, 5)]
             print('Попався!')
+
+    def bonus_click(self, mouse_x, mouse_y):
+        global score
+        global time_live
+        if (np.abs(mouse_x - self.x) <= self.r) and (np.abs(mouse_y - self.y) <= self.r):
+            score = score + 5
+            time_live = time_live + 25
+            if time_live >= 438:
+                time_live = 437
+            self.x = randint(50, 900)
+            self.y = randint(100, 650)
+            self.r = randint(10, 15)
+            self.color = COLORS[randint(0, 5)]
+            print('Бонус попався!')
+
+    def collision_ball(self, ball):
+        t = (self.x - ball.x)**2 + (self.y - ball.y)**2 - (self.r + ball.r)**2
+        if t < 0 and self.x != ball.x and self.y != ball.y:
+            self.Vx = -self.Vx
+            self.Vy = -self.Vy
+            self.x = self.x + (self.x - ball.x)/np.abs(self.x - ball.x)*10
+            self.y = self.y + (self.y - ball.y)/np.abs(self.y - ball.y)*10
 
 
 BONUS = Ball(randint(50, 850), randint(100, 650), randint(-15, 15), randint(-15, 15), 30, COLORS[0])
@@ -109,13 +137,18 @@ while not finished:
         elif event.type == pygame.MOUSEBUTTONDOWN:
             mouse_x = event.pos[0]
             mouse_y = event.pos[1]
-            BONUS.ball_click(mouse_x, mouse_y)
+            BONUS.bonus_click(mouse_x, mouse_y)
             for i in range(6):
                 LIST_BALLS[i].ball_click(mouse_x, mouse_y)
     BONUS.bonus_action()
     BONUS.collision_wall()
     for i in range(6):
         LIST_BALLS[i].move()
+        for j in range(6):
+            if i == j:
+                pass
+            else:
+                LIST_BALLS[i].collision_ball(LIST_BALLS[j])
         LIST_BALLS[i].collision_wall()
     time_live = time_live - 1
     polygon(screen, (180, 0, 0), [(502, 22), (502 + time_live, 22), (502 + time_live, 38), (500, 38)])
@@ -125,7 +158,10 @@ while not finished:
         if score >= 8:
             for i in range(14):
                 print(Stroka[i], file=out)
-            print('10. You                       |     ', score)
+            print('10. You                       |    ', score, file=out)
+        else:
+            for i in range(15):
+                print(Stroka[i], file=out)
         out.close()
     pygame.display.update()
     screen.fill(BLACK)
