@@ -18,7 +18,12 @@ MAGENTA = (255, 0, 255)
 CYAN = (0, 255, 255)
 BLACK = (0, 0, 0)
 COLORS = [GREY, BLUE, YELLOW, GREEN, MAGENTA, CYAN]
-
+inp = open('Table of Records', 'r')
+out = open('Table of records (for players).txt', 'w')
+Stroka = []
+for i in range(15):
+    Stroka.append(inp.readline())
+print(Stroka[1])
 
 class Ball:
     def __init__(self, x, y, Vx, Vy, r, color):
@@ -117,6 +122,11 @@ while not finished:
     if time_live <= 0:
         finished = True
         print('Игра закончена. Ваш результат: ', score)
+        if score >= 8:
+            for i in range(14):
+                print(Stroka[i], file=out)
+            print('10. You                       |     ', score)
+        out.close()
     pygame.display.update()
     screen.fill(BLACK)
 pygame.quit()
