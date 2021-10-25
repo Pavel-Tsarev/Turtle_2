@@ -37,6 +37,16 @@ class Ball:
         circle(screen, (100, 100, 255), (self.x, self.y), 5*self.r/7)
         circle(screen, (255, 0, 0), (self.x, self.y), 3*self.r/7)
 
+    def bonus_action(self):
+        ellipse(screen, (0, 0, 0), (self.x, self.y, 10, 5))
+        circle(screen, (0, 0, 0), (self.x, self.y), self.r)
+        self.x = self.x + randint(-20, 20)
+        self.y = self.y + randint(-20, 20)
+        circle(screen, (0, 110, 0), (self.x, self.y), self.r)
+        circle(screen, (0, 0, 0), (self.x, self.y), self.r - 2)
+        ellipse(screen, (0, 110, 0), (self.x - self.r - 10, self.y + self.r - 5, 20 + 2*self.r, 10 + self.r/2))
+        ellipse(screen, (0, 0, 0), (self.x - self.r -8, self.y + self.r - 3, 16 + 2*self.r, 6 + self.r/2))
+
     def collision_wall(self):
         if self.x + self.r >= 900:
             self.Vx = -1 * self.Vx
@@ -68,6 +78,7 @@ class Ball:
             print('Попався!')
 
 
+BONUS = Ball(randint(50, 850), randint(100, 650), randint(-15, 15), randint(-15, 15), 30, COLORS[0])
 ball_one = Ball(randint(50, 850), randint(100, 650), randint(-15, 15), randint(-15, 15), randint(20, 50), COLORS[0])
 ball_two = Ball(randint(50, 850), randint(100, 650), randint(-15, 15), randint(-15, 15), randint(20, 50), COLORS[1])
 ball_three = Ball(randint(50, 850), randint(100, 650), randint(-15, 15), randint(-15, 15), randint(20, 50), COLORS[2])
@@ -93,8 +104,11 @@ while not finished:
         elif event.type == pygame.MOUSEBUTTONDOWN:
             mouse_x = event.pos[0]
             mouse_y = event.pos[1]
+            BONUS.ball_click(mouse_x, mouse_y)
             for i in range(6):
                 LIST_BALLS[i].ball_click(mouse_x, mouse_y)
+    BONUS.bonus_action()
+    BONUS.collision_wall()
     for i in range(6):
         LIST_BALLS[i].move()
         LIST_BALLS[i].collision_wall()
