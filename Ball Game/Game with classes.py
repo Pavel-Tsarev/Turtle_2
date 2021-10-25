@@ -35,6 +35,9 @@ class Ball:
         self.color = color
 
     def move(self):
+        '''
+        метод перемещает шар вдоль его скорости
+        '''
         circle(screen, BLACK, (self.x, self.y), self.r)
         self.x = self.x + self.Vx
         self.y = self.y + self.Vy
@@ -43,6 +46,9 @@ class Ball:
         circle(screen, (255, 0, 0), (self.x, self.y), 3*self.r/7)
 
     def bonus_action(self):
+        '''
+        метод хаотично перемещает бонусный объект
+        '''
         ellipse(screen, (0, 0, 0), (self.x, self.y, 10, 5))
         circle(screen, (0, 0, 0), (self.x, self.y), self.r)
         self.x = self.x + randint(-20, 20)
@@ -50,9 +56,12 @@ class Ball:
         circle(screen, (0, 110, 0), (self.x, self.y), self.r)
         circle(screen, (0, 0, 0), (self.x, self.y), self.r - 2)
         ellipse(screen, (0, 110, 0), (self.x - self.r - 10, self.y + self.r - 5, 20 + 2*self.r, 10 + self.r/2))
-        ellipse(screen, (0, 0, 0), (self.x - self.r -8, self.y + self.r - 3, 16 + 2*self.r, 6 + self.r/2))
+        ellipse(screen, (0, 0, 0), (self.x - self.r - 8, self.y + self.r - 3, 16 + 2*self.r, 6 + self.r/2))
 
     def collision_wall(self):
+        '''
+        метод оценивает расстоние от центра шарика до стен и отвечает за отражение шарика от стены в случае касания
+        '''
         if self.x + self.r >= 900:
             self.Vx = -1 * self.Vx
             self.x = self.x - 10
@@ -67,6 +76,12 @@ class Ball:
             self.y = self.y + 10
 
     def ball_click(self, mouse_x, mouse_y):
+        '''
+        метод оценивает расстояние от координаты курсора до центра шарика и при попадании курсором по шарику прибавляет
+        игровые очки и создает новый шар
+        param mouse_x: горизонтальная координата курсора
+        param mouse_y: вертикальная координата курсора
+        '''
         global score
         global time_live
         if (np.abs(mouse_x - self.x) <= self.r) and (np.abs(mouse_y - self.y) <= self.r):
@@ -78,7 +93,7 @@ class Ball:
                 if (np.abs(mouse_x - self.x) <= self.r) and (np.abs(mouse_y - self.y) <= 3*self.r/7):
                     score = score + 1
                     time_live = time_live + 5
-            if time_live >= 438:
+            if time_live >= 438:                  # проверка того, что линия жизни не вышла за пределы шкалы
                 time_live = 437
             self.x = randint(50, 900)
             self.y = randint(100, 650)
@@ -89,6 +104,12 @@ class Ball:
             print('Попався!')
 
     def bonus_click(self, mouse_x, mouse_y):
+        '''
+        метод оценивает расстояние от координаты курсора до бонусного объекта и при попадании курсором
+        по бонусному объекту прибавляет игровые очки и создает объект в другом  месте
+        param mouse_x: горизонтальная координата курсора
+        param mouse_y: вертикальная координата курсора
+        '''
         global score
         global time_live
         if (np.abs(mouse_x - self.x) <= self.r) and (np.abs(mouse_y - self.y) <= self.r):
@@ -103,12 +124,17 @@ class Ball:
             print('Бонус попався!')
 
     def collision_ball(self, ball):
+        '''
+        метод оценивает расстояние между 2 шарами и в зависимости от этого меняет скорости так,
+        чтобы шары не пересекались
+        param ball: объект класса Ball, с которым проверяется столкновение
+        '''
         t = (self.x - ball.x)**2 + (self.y - ball.y)**2 - (self.r + ball.r)**2
         if t < 0 and self.x != ball.x and self.y != ball.y:
             self.Vx = -self.Vx
             self.Vy = -self.Vy
-            self.x = self.x + (self.x - ball.x)/np.abs(self.x - ball.x)*10
-            self.y = self.y + (self.y - ball.y)/np.abs(self.y - ball.y)*10
+            self.x = self.x + (self.x - ball.x)/np.abs(self.x - ball.x)*10       # небольшое изменение координат шарика,
+            self.y = self.y + (self.y - ball.y)/np.abs(self.y - ball.y)*10       # чтобы избежать пересечения с другим
 
 
 BONUS = Ball(randint(50, 850), randint(100, 650), randint(-15, 15), randint(-15, 15), 30, COLORS[0])
@@ -129,7 +155,7 @@ while not finished:
     f = pygame.font.Font(None, 36)
     text = f.render('Score: ' + str(score) + '  Time: ', True, (180, 0, 0))
     screen.blit(text, (220, 20))
-    polygon(screen, (180, 0, 0), [(500, 20), (850, 20), (850, 40), (500, 40)])
+    polygon(screen, (180, 0, 0), [(500, 20), (850, 20), (850, 40), (500, 40)])      # создание шкалы времени
     polygon(screen, (0, 0, 0), [(502, 22), (847, 22), (847, 38), (502, 38)])
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
