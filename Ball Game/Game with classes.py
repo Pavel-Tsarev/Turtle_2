@@ -10,13 +10,13 @@ pygame.init()
 FPS = 30
 screen = pygame.display.set_mode((600, 450))
 score = 0
-x1 = randint(50, 550)              #здесь я назначаю координаты шариков
+x1 = randint(50, 550)
 x2 = randint(50, 550)
 y1 = randint(100, 400)
 y2 = randint(100, 400)
-r1 = randint(15, 30)               #здесь я назначаю радиусы шариков
+r1 = randint(15, 30)
 r2 = randint(15, 50)
-Vx1 = randint(-15, 15)             #здесь я назначаю скорости шариков
+Vx1 = randint(-15, 15)
 Vx2 = randint(-15, 15)
 Vy1 = randint(-15, 15)
 Vy2 = randint(-15, 15)
@@ -29,8 +29,9 @@ CYAN = (0, 255, 255)
 BLACK = (0, 0, 0)
 COLORS = [RED, BLUE, YELLOW, GREEN, MAGENTA, CYAN]
 
+
 class Ball:
-    def __init__ (self, x, y, Vx, Vy, r, color):
+    def __init__(self, x, y, Vx, Vy, r, color):
         self.x = x
         self.y = y
         self.Vx = Vx
@@ -42,35 +43,38 @@ class Ball:
         circle(screen, BLACK, (self.x, self.y), self.r)
         self.x = self.x + self.Vx
         self.y = self.y + self.Vy
-        color = COLORS[1]
-        circle(screen, color, (self.x, self.y), self.r)
+        circle(screen, self.color, (self.x, self.y), self.r)
 
     def collision_wall(self):
-        if (self.x + self.r >= 600):
+        if self.x + self.r >= 600:
             self.Vx = -1 * self.Vx
             self.x = self.x - 10
-        if (self.x - self.r <= 0):
+        if self.x - self.r <= 0:
             self.Vx = -1 * self.Vx
             self.x = self.x + 10
-        if (self.y + self.r >= 450):
+        if self.y + self.r >= 450:
             self.Vy = -1 * self.Vy
             self.y = self.y - 10
-        if (self.y - self.r <= 50):
+        if self.y - self.r <= 50:
             self.Vy = -1 * self.Vy
             self.y = self.y + 10
 
-    def ball_click(x0, y0):
+    def ball_click(self, x0, y0):
+        global score
+        if (np.abs(x0 - self.x) <= self.r) and (np.abs(y0 - self.y) <= self.r):
+            self.x = randint(50, 550)
+            self.y = randint(100, 400)
+            self.r = randint(15, 50)
+            self.Vx = randint(-15, 15)
+            self.Vy = randint(-15, 15)
+            self.color = COLORS[randint(0, 5)]
+            print('Попався!')
+            score = score + 1
 
+ball_one = Ball(x1, y1, Vx1, Vy1, r1, COLORS[0])
 
-def new_ball(x, y, r):
-    '''
-    рисует шарик заданного радиуса в указанной точке
-    x - горизонтальная координата центра
-    y - вертикальная координата центра
-    r - радиус
-    '''
-    color = COLORS[randint(0, 5)]
-    circle(screen, color, (x, y), r)
+def draw_ball(x, y, r):
+    circle(screen, COLORS[3], (x, y), r)
 
 pygame.display.update()
 clock = pygame.time.Clock()
@@ -87,41 +91,21 @@ while not finished:
         elif event.type == pygame.MOUSEBUTTONDOWN:
             x0 = event.pos[0]
             y0 = event.pos[1]
-            if (np.abs(x0 - x1) <= r1) and (np.abs(y0 - y1) <= r1):
-                print('Catched!')
-                score = score + 1
-                x1 = randint(50, 550)                     #создает новый шар в другом месте
-                y1 = randint(100, 400)
-                r1 = randint(15, 50)
-                Vx1 = randint(-15, 15)
-                Vy1 = randint(-15, 15)
+            ball_one.ball_click(x0, y0)
             if (np.abs(x0 - x2) <= r2) and (np.abs(y0 - y2) <= r2):
-                print('Catched!')
+                print('Попався!')
                 score = score + 1
-                x2 = randint(50, 550)                     #создает новый шар в другом месте
+                x2 = randint(50, 550)
                 y2 = randint(100, 400)
                 r2 = randint(15, 50)
                 Vx2 = randint(-15, 15)
                 Vy2 = randint(-15, 15)
-    new_ball(x1, y1, r1)
-    x1 = x1 + Vx1
-    y1 = y1 + Vy1
-    if (x1 + r1 >= 600):                                 #первый шар отражается от стенок
-        Vx1 = -1*Vx1
-        x1 = x1 - 10
-    if (x1 - r1 <= 0):
-        Vx1 = -1*Vx1
-        x1 = x1 +10
-    if (y1 + r1 >= 450):
-        Vy1 = -1*Vy1
-        y1 = y1 - 10
-    if (y1 - r1 <= 50):
-        l1 = -1*Vy1
-        y1 = y1 + 10
-    new_ball(x2, y2, r2)
+    ball_one.move()
+    ball_one.collision_wall()
+    draw_ball(x2, y2, r2)
     x2 = x2 + Vx2
     y2 = y2 + Vy2
-    if (x2 + r2 >= 600):                                 #второй шар отражается от стенок
+    if (x2 + r2 >= 600):
         Vx2 = -1 * Vx2
         x2 = x2 - 10
     if (x2 - r2 <= 0):
