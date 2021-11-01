@@ -19,25 +19,11 @@ CYAN = (0, 255, 255)
 BLACK = (0, 0, 0)
 COLORS = [GREY, BLUE, YELLOW, GREEN, MAGENTA, CYAN]
 inp = open('Table of Records', 'r')
-
+out = open('Table of records (for players).txt', 'w')
 Stroka = []
-Results = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-for i in range(14):                         # это я считываю строки из таблицы рекордов
-    Stroka.append(inp.readline())
-for i in range(0, 10, 1):                   # это я вынимаю численные значения рекордов
-    j = 33
-    dlina = 0
-    record = 0
-    while Stroka[i + 4][j] != '\n':
-        dlina = dlina + 1
-        j = j + 1
-    for f in range(33, j, 1):
-        dlina = dlina - 1
-        record = record + int(Stroka[i + 4][f])*10**dlina
-    Results[i] = record
-print(Results)
-out = open('Table of Records', 'w')
-
+for line in inp.readlines():
+    Stroka.append(line.split)
+print(Stroka([2]))
 
 class Ball:
     def __init__(self, x, y, Vx, Vy, r, color):
@@ -50,7 +36,7 @@ class Ball:
 
     def move(self):
         '''
-        метод перемещает шар согласно его скорости
+        метод перемещает шар вдоль его скорости
         '''
         circle(screen, BLACK, (self.x, self.y), self.r)
         self.x = self.x + self.Vx
@@ -195,35 +181,13 @@ while not finished:
     if time_live <= 0:
         finished = True
         print('Игра закончена. Ваш результат: ', score)
-        if score >= Results[9] and score < Results[0]:
-            for i in range(4):
-                Stroka[i] = Stroka[i].rstrip()
+        if score >= 8:
+            for i in range(14):
                 print(Stroka[i], file=out)
-            for i in range(9):
-                if (Results[i] > score) and (score >= Results[i + 1]):
-                    Stroka[i + 4] = Stroka[i + 4].rstrip()
-                    print(Stroka[i + 4], file=out)
-                    print('You                        |    ', score, file=out)
-                else:
-                    if Results[i] > score:
-                        Stroka[i + 4] = Stroka[i + 4].rstrip()
-                        print(Stroka[i + 4], file=out)
-                    if Results[i] < score:
-                        Stroka[i + 4] = Stroka[i + 4].rstrip()
-                        print(Stroka[i + 4], file=out)
+            print('10. You                       |    ', score, file=out)
         else:
-            if score < Results[9]:
-                for i in range(14):
-                    Stroka[i] = Stroka[i].rstrip()
-                    print(Stroka[i], file=out)
-            if score >= Results[0]:
-                for i in range(4):
-                    Stroka[i] = Stroka[i].rstrip()
-                    print(Stroka[i], file=out)
-                print('You                        |    ', score, file=out)
-                for i in range(9):
-                    Stroka[i + 4] = Stroka[i + 4].rstrip()
-                    print(Stroka[i + 4], file=out)
+            for i in range(15):
+                print(Stroka[i], file=out)
         out.close()
     pygame.display.update()
     screen.fill(BLACK)
