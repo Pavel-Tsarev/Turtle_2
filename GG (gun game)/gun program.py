@@ -16,6 +16,9 @@ l = 25
 v = 5
 a = 0
 fly = -1
+x_pushka = 450
+dviz_pushka_x = 0
+dviz_pushka_y = 0
 time_live = 347
 GREY = (127, 127, 127)
 BLUE = (0, 0, 255)
@@ -86,7 +89,7 @@ class Ball:
         if self.x - self.r <= 100:
             self.Vx = -1 * self.Vx
             self.x = self.x + 10
-        if self.y + self.r >= 700:
+        if self.y + self.r >= 670:
             self.Vy = -1 * self.Vy
             self.y = self.y - 10
         if self.y - self.r <= 50:
@@ -143,24 +146,26 @@ class Ball:
 
 
 class Gun:
-    def __init__(self, a, l):
+    def __init__(self, a, l, x):
         self.a = a
         self.l = l
+        self.x = x
 
     def draw_gun(self):
         '''
         Рисует пушку, направленную на курсор мыши
         '''
-        cosa = 1/(self.a**2 + 1)**0.5
-        sina = self.a/(self.a**2 + 1)**0.5
+        polygon(screen, GREEN, [(self.x - 50, 680), (self.x + 50, 680), (self.x + 50, 660), (self.x - 50, 660)])
+        cosa = self.a/np.abs(self.a)*1/(self.a**2 + 1)**0.5
+        sina = np.abs(self.a)/(self.a**2 + 1)**0.5
         if ready == 1:
             colour = (200, 0, 0)
         if ready == 0 or ready == 2:
             colour = GREEN
-        polygon(screen, colour, [(20 + h*(cosa - sina)/2**0.5, 400 + h*(cosa + sina)/2**0.5),
-                                (20 + h*(cosa - sina)/2**0.5 + self.l*cosa, 400 + h*(cosa + sina)/2**0.5 + self.l*sina),
-                                (20 + h*(cosa + sina)/2**0.5 + self.l*cosa, 400 + h*(sina - cosa)/2**0.5 + self.l*sina),
-                                (20 + h*(cosa + sina)/2**0.5, 400 + h*(sina - cosa)/2**0.5)])
+        polygon(screen, colour, [(self.x + h*(cosa + sina)/2**0.5, 680 - h*(sina - cosa)/2**0.5),
+                                 (self.x + h*(cosa + sina)/2**0.5 + self.l*cosa, 680 - h*(sina - cosa)/2**0.5 - self.l*sina),
+                                 (self.x + h*(cosa - sina)/2**0.5 + self.l*cosa, 680 - h*(sina + cosa)/2**0.5 - self.l*sina),
+                                 (self.x + h*(cosa - sina)/2**0.5, 680 - h*(sina + cosa)/2**0.5)])
 
     def gun_fire(self):
         circle(screen, self.color, (20 + (10 + self.l + self.r)/(self.a**2 + 1)**0.5,
@@ -170,9 +175,11 @@ class Gun:
 BONUS = Ball(randint(100, 850), randint(100, 650), randint(-15, 15), randint(-15, 15), randint(10, 20), COLORS[randint(0, 5)])
 ball_one = Ball(randint(200, 850), randint(100, 650), randint(-15, 15), randint(-15, 15), randint(10, 20), COLORS[randint(0, 5)])
 ball_two = Ball(randint(200, 850), randint(100, 650), randint(-15, 15), randint(-15, 15), randint(10, 20), COLORS[randint(0, 5)])
+Smert_one = Ball(randint(200, 850), randint(100, 650), randint(-15, 15), randint(-15, 15), 30, (255, 255, 255))
+Smert_two = Ball(randint(200, 850), randint(100, 650), randint(-15, 15), randint(-15, 15), 30, (255, 255, 255))
 snaryad = Ball(300, 300, 0, 0, 1, (0, 0, 0))
-LIST_BALLS = [ball_one, ball_two]
-Pushka = Gun(0, 20)
+LIST_BALLS = [ball_one, ball_two, Smert_one, Smert_two]
+Pushka = Gun(0, 20, 450)
 
 pygame.display.update()
 clock = pygame.time.Clock()
@@ -186,6 +193,13 @@ while not finished:
     polygon(screen, (180, 0, 0), [(500, 20), (850, 20), (850, 40), (500, 40)])      # создание шкалы времени
     polygon(screen, (0, 0, 0), [(502, 22), (847, 22), (847, 38), (502, 38)])
     for event in pygame.event.get():
+        if event.type == pygame.KEYDOWN and event.key == pygame.K_d:
+            dviz_pushka_x = 1
+        if event.type == pygame.KEYDOWN and event.key == pygame.K_a:
+            dviz_pushka_y = 1
+        if event.type == pygame.KEYUP:
+            dviz_pushka_x = 0
+            dviz_pushka_y = 0
         if event.type == pygame.QUIT:
             finished = True
         elif event.type == pygame.MOUSEBUTTONDOWN:
@@ -196,19 +210,27 @@ while not finished:
             ready = 2
         elif event.type == pygame.MOUSEMOTION:
             mouse_x = event.pos[0]
+            if mouse_x == 450:
+                mouse_x = 450.0001
             mouse_y = event.pos[1]
-            a = (mouse_y - 400) / (mouse_x - 20)
-            Pushka = Gun(a, l)
+            a = (mouse_y - 780) / (450 - mouse_x)
+            x = x_pushka
+            Pushka = Gun(a, l, x)
     Pushka.draw_gun()
     if ready == 1:
         l = l + 2
-        if l >= 70:
-            l = 69
+        if l >= 100:
+            l = 99
         v = v + 2
         fly = 0
+    if dviz_pushka_x == 1:
+        x_pushka = x_pushka + 1
+    if dviz_pushka_y == 1:
+        x_pushka = x_pushka - 1
     if ready == 0:
         rad = randint(15, 30)
-        snaryad = Ball(20 + (10 + l + rad)/(a**2 + 1)**0.5, 400 + (10 +l + rad)*a/(a**2 + 1)**0.5, v/(a**2 + 1)**0.5, v*a/(a**2 + 1)**0.5, rad, (255, 0, 0))
+        snaryad = Ball(x_pushka + (10 + l + rad)*a/np.abs(a)/(a**2 + 1)**0.5, 680 - (10 + l + rad)*np.abs(a)/(a**2 + 1)**0.5,
+                       v*(a/np.abs(a))/(a**2 + 1)**0.5, v*(-1)*np.abs(a)/(a**2 + 1)**0.5, rad, (255, 0, 0))
         l = 25
         v = 5
         snaryad_time = 50
@@ -229,7 +251,7 @@ while not finished:
             else:
                 LIST_BALLS[i].collision_ball(LIST_BALLS[j])
         LIST_BALLS[i].collision_wall()
-    time_live = time_live - 1
+    time_live = time_live - 0.5
     polygon(screen, (180, 0, 0), [(502, 22), (502 + time_live, 22), (502 + time_live, 38), (500, 38)])
     if time_live <= 0:
         finished = True
