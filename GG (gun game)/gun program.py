@@ -16,6 +16,7 @@ l = 25
 v = 5
 a = 0
 fly = -1
+bomb_number = 0
 x_pushka = 450
 dviz_pushka = 0
 time_live = 347
@@ -151,9 +152,23 @@ class Ball:
             self.Vx = 0
             self.Vy = 0
 
-    def bomb(self, ball):
-        pass
+    def create_bomb(self, ball):
+        self.x = ball.x
+        self.y = ball.y - 37.5 - 8
+        self.Vy = 0
 
+    def bomb_fall(self):
+        global bomb_number
+        ellipse(screen, (0, 0, 0), (self.x - 2, self.y + 4, 4, 8))
+        if self.y >= 700:
+            self.x = 0
+            self.y = 0
+            self.Vy = 0
+            bomb_number = 0
+        else:
+            self.Vy = self.Vy - 0.5
+            self.y = self.y - self.Vy
+            ellipse(screen, (124, 124, 124), (self.x - 2, self.y + 4, 8, 16))
 
 class Gun:
     def __init__(self, a, l, x):
@@ -177,9 +192,16 @@ class Gun:
                                  (self.x + h*(cosa - sina)/2**0.5 + self.l*cosa, 680 - h*(sina + cosa)/2**0.5 - self.l*sina),
                                  (self.x + h*(cosa - sina)/2**0.5, 680 - h*(sina + cosa)/2**0.5)])
 
+    def bomb_explosion(self, ball):
+        global time_live
+        if self.x - 50 <= ball.x and self.x + 50 >= ball.x and ball.y >= 668:
+            print('Вы взорваны. Окончательно и безповоротно')
+            time_live = 0
+
 
 ball_one = Ball(randint(200, 850), randint(100, 650), randint(-15, 15), randint(-15, 15), randint(10, 20), COLORS[randint(0, 5)])
 ball_two = Ball(randint(200, 850), randint(100, 650), randint(-15, 15), randint(-15, 15), randint(10, 20), COLORS[randint(0, 5)])
+bomb = Ball(0, 0, 0, 0, 1, (0, 0, 0))
 Smert_one = Ball(randint(200, 850), randint(100, 650), randint(-15, 15), randint(-15, 15), 30, (255, 255, 255))
 Smert_two = Ball(randint(200, 850), randint(100, 650), randint(-15, 15), randint(-15, 15), 30, (255, 255, 255))
 snaryad = Ball(300, 300, 0, 0, 1, (0, 0, 0))
@@ -229,7 +251,7 @@ while not finished:
         v = v + 2
         fly = 0
     if x_pushka >= 50 and x_pushka <= 850:
-        x_pushka = x_pushka + dviz_pushka
+        x_pushka = x_pushka + dviz_pushka*2
     else:
         x_pushka = x_pushka + (450 - x_pushka)/np.abs(450 - x_pushka)
     if ready == 0:
@@ -265,7 +287,15 @@ while not finished:
             else:
                 LIST_SMERTS[i].collision_ball(LIST_BALLS[j])
                 LIST_SMERTS[i].collision_ball(LIST_SMERTS[j])
-
+    if bomb_number == 0:
+        i = randint(0, 1)
+        p = randint(-10, 10)
+        if p == 0:
+            bomb.create_bomb(LIST_SMERTS[i])
+            bomb_number = 1
+    if bomb_number == 1:
+        bomb.bomb_fall()
+        Pushka.bomb_explosion(bomb)
     time_live = time_live - 0.5
     polygon(screen, (180, 0, 0), [(502, 22), (502 + time_live, 22), (502 + time_live, 38), (500, 38)])
     if time_live <= 0:
