@@ -17,8 +17,7 @@ v = 5
 a = 0
 fly = -1
 x_pushka = 450
-dviz_pushka_x = 0
-dviz_pushka_y = 0
+dviz_pushka = 0
 time_live = 347
 GREY = (127, 127, 127)
 BLUE = (0, 0, 255)
@@ -66,18 +65,26 @@ class Ball:
         self.y = self.y + self.Vy
         circle(screen, self.color, (self.x, self.y), self.r)
 
-    def bonus_action(self):
+    def smert_move(self):
         '''
-        метод хаотично перемещает бонусный объект
+        метод хаотично перемещает череп
         '''
-        ellipse(screen, (0, 0, 0), (self.x, self.y, 10, 5))
-        circle(screen, (0, 0, 0), (self.x, self.y), self.r)
-        self.x = self.x + randint(-20, 20)
-        self.y = self.y + randint(-20, 20)
-        circle(screen, (0, 110, 0), (self.x, self.y), self.r)
-        circle(screen, (0, 0, 0), (self.x, self.y), self.r - 2)
-        ellipse(screen, (0, 110, 0), (self.x - self.r - 10, self.y + self.r - 5, 20 + 2*self.r, 10 + self.r/2))
-        ellipse(screen, (0, 0, 0), (self.x - self.r - 8, self.y + self.r - 3, 16 + 2*self.r, 6 + self.r/2))
+        circle(screen, (0, 0, 0), (self.x, self.y), 25)
+        circle(screen, (0, 0, 0), (self.x, self.y + 12.5), 12.5)
+        if np.abs(self.x - 450) <= 450 and np.abs(self.y - 350) <= 300:
+            self.x = self.x + randint(-20, 20)
+            self.y = self.y + randint(-20, 20)
+        else:
+            self.x = self.x + 20*np.abs(450 - self.x)/(450 - self.x)
+            self.y = self.y + 20*np.abs(350 - self.y)/(350 - self.y)
+        circle(screen, (255, 255, 255), (self.x, self.y), 25)
+        circle(screen, (255, 255, 255), (self.x, self.y + 12.5), 12.5)
+        circle(screen, (0, 0, 0), (self.x - 5, self.y - 5), 5)
+        circle(screen, (0, 0, 0), (self.x + 5, self.y - 5), 5)
+        polygon(screen, (0, 0, 0), [(self.x - 10, self.y + 5), (self.x - 10, self.y + 20),
+                                    (self.x + 10, self.y + 20), (self.x + 10, self.y + 5)], 2)
+        polygon(screen, (0, 0, 0), [(self.x - 20/6, self.y + 5), (self.x - 20/6, self.y + 20),
+                                    (self.x + 20/6, self.y + 20), (self.x + 20/6, self.y + 5)], 2)
 
     def collision_wall(self):
         '''
@@ -144,6 +151,9 @@ class Ball:
             self.Vx = 0
             self.Vy = 0
 
+    def bomb(self, ball):
+        pass
+
 
 class Gun:
     def __init__(self, a, l, x):
@@ -167,18 +177,14 @@ class Gun:
                                  (self.x + h*(cosa - sina)/2**0.5 + self.l*cosa, 680 - h*(sina + cosa)/2**0.5 - self.l*sina),
                                  (self.x + h*(cosa - sina)/2**0.5, 680 - h*(sina + cosa)/2**0.5)])
 
-    def gun_fire(self):
-        circle(screen, self.color, (20 + (10 + self.l + self.r)/(self.a**2 + 1)**0.5,
-                                    400 + (10 + self.l + self.r)*self.a/(self.a**2 + 1)**0.5), self.r)
 
-
-BONUS = Ball(randint(100, 850), randint(100, 650), randint(-15, 15), randint(-15, 15), randint(10, 20), COLORS[randint(0, 5)])
 ball_one = Ball(randint(200, 850), randint(100, 650), randint(-15, 15), randint(-15, 15), randint(10, 20), COLORS[randint(0, 5)])
 ball_two = Ball(randint(200, 850), randint(100, 650), randint(-15, 15), randint(-15, 15), randint(10, 20), COLORS[randint(0, 5)])
 Smert_one = Ball(randint(200, 850), randint(100, 650), randint(-15, 15), randint(-15, 15), 30, (255, 255, 255))
 Smert_two = Ball(randint(200, 850), randint(100, 650), randint(-15, 15), randint(-15, 15), 30, (255, 255, 255))
 snaryad = Ball(300, 300, 0, 0, 1, (0, 0, 0))
-LIST_BALLS = [ball_one, ball_two, Smert_one, Smert_two]
+LIST_BALLS = [ball_one, ball_two]
+LIST_SMERTS = [Smert_one, Smert_two]
 Pushka = Gun(0, 20, 450)
 
 pygame.display.update()
@@ -194,12 +200,11 @@ while not finished:
     polygon(screen, (0, 0, 0), [(502, 22), (847, 22), (847, 38), (502, 38)])
     for event in pygame.event.get():
         if event.type == pygame.KEYDOWN and event.key == pygame.K_d:
-            dviz_pushka_x = 1
+            dviz_pushka = 1
         if event.type == pygame.KEYDOWN and event.key == pygame.K_a:
-            dviz_pushka_y = 1
+            dviz_pushka = -1
         if event.type == pygame.KEYUP:
-            dviz_pushka_x = 0
-            dviz_pushka_y = 0
+            dviz_pushka = 0
         if event.type == pygame.QUIT:
             finished = True
         elif event.type == pygame.MOUSEBUTTONDOWN:
@@ -223,10 +228,10 @@ while not finished:
             l = 99
         v = v + 2
         fly = 0
-    if dviz_pushka_x == 1:
-        x_pushka = x_pushka + 1
-    if dviz_pushka_y == 1:
-        x_pushka = x_pushka - 1
+    if x_pushka >= 50 and x_pushka <= 850:
+        x_pushka = x_pushka + dviz_pushka
+    else:
+        x_pushka = x_pushka + (450 - x_pushka)/np.abs(450 - x_pushka)
     if ready == 0:
         rad = randint(15, 30)
         snaryad = Ball(x_pushka + (10 + l + rad)*a/np.abs(a)/(a**2 + 1)**0.5, 680 - (10 + l + rad)*np.abs(a)/(a**2 + 1)**0.5,
@@ -251,6 +256,16 @@ while not finished:
             else:
                 LIST_BALLS[i].collision_ball(LIST_BALLS[j])
         LIST_BALLS[i].collision_wall()
+    for i in range(2):
+        LIST_SMERTS[i].smert_move()
+        LIST_SMERTS[i].collision_snaryad(snaryad)
+        for j in range(2):
+            if i == j:
+                LIST_SMERTS[i].collision_ball(LIST_BALLS[j])
+            else:
+                LIST_SMERTS[i].collision_ball(LIST_BALLS[j])
+                LIST_SMERTS[i].collision_ball(LIST_SMERTS[j])
+
     time_live = time_live - 0.5
     polygon(screen, (180, 0, 0), [(502, 22), (502 + time_live, 22), (502 + time_live, 38), (500, 38)])
     if time_live <= 0:
