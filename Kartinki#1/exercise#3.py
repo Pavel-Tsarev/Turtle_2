@@ -9,7 +9,6 @@ screen = pygame.display.set_mode((600, 800))
 polygon(screen, (0, 150, 200), [(0, 0), (600, 0), (600, 400), (0, 400)])
 polygon(screen, (70, 230, 150), [(0, 401), (600, 401), (600, 800), (0, 800)])
 
-
 def zabor(x, y, a, b, n):
     rect(screen, (180, 180, 0), (x, y, a, b))
     h = a / n

@@ -19,6 +19,8 @@ fly = -1
 bomb_number = 0
 x_pushka = 450
 dviz_pushka = 0
+dviz_dulo = 0
+angle = np.pi/2 + 0.1
 time_live = 347
 GREY = (127, 127, 127)
 BLUE = (0, 0, 255)
@@ -225,24 +227,29 @@ while not finished:
             dviz_pushka = 1
         if event.type == pygame.KEYDOWN and event.key == pygame.K_a:
             dviz_pushka = -1
-        if event.type == pygame.KEYUP:
+        if event.type == pygame.KEYUP and (event.key == pygame.K_a or event.key == pygame.K_d):
             dviz_pushka = 0
         if event.type == pygame.QUIT:
             finished = True
-        elif event.type == pygame.MOUSEBUTTONDOWN:
+        elif event.type == pygame.KEYDOWN and event.key == pygame.K_f:
             ready = 1
-        elif event.type == pygame.MOUSEBUTTONUP and fly == 0:
+        elif event.type == pygame.KEYUP and event.key == pygame.K_f and fly == 0:
             ready = 0
-        elif event.type == pygame.MOUSEBUTTONUP and fly == 1:
+        elif event.type == pygame.KEYUP and event.key == pygame.K_f and fly == 1:
             ready = 2
-        elif event.type == pygame.MOUSEMOTION:
-            mouse_x = event.pos[0]
-            if mouse_x == 450:
-                mouse_x = 450.0001
-            mouse_y = event.pos[1]
-            a = (mouse_y - 780) / (450 - mouse_x)
-            x = x_pushka
-            Pushka = Gun(a, l, x)
+        elif event.type == pygame.KEYDOWN and event.key == pygame.K_w:
+            dviz_dulo = 1
+        elif event.type == pygame.KEYDOWN and event.key == pygame.K_s:
+            dviz_dulo = -1
+        if event.type == pygame.KEYUP and (event.key == pygame.K_w or event.key == pygame.K_s):
+            dviz_dulo = 0
+        if angle <= 0:
+            angle = 0.01
+        if angle >= np.pi:
+            angle = np.pi - 0.01
+        a = np.tan(angle)
+        x = x_pushka
+        Pushka = Gun(a, l, x)
     Pushka.draw_gun()
     if ready == 1:
         l = l + 2
@@ -250,6 +257,7 @@ while not finished:
             l = 99
         v = v + 2
         fly = 0
+    angle = angle + dviz_dulo*np.pi/180
     if x_pushka >= 50 and x_pushka <= 850:
         x_pushka = x_pushka + dviz_pushka*2
     else:
