@@ -17,10 +17,12 @@ v = 5
 a = 0
 fly = -1
 bomb_number = 0
+enemy_bomb_number = 0
 x_pushka = 450
 dviz_pushka = 0
 dviz_dulo = 0
 angle = np.pi/2 + 0.1
+enemy_time = 0
 time_live = 347
 GREY = (127, 127, 127)
 BLUE = (0, 0, 255)
@@ -155,11 +157,17 @@ class Ball:
             self.Vy = 0
 
     def create_bomb(self, ball):
+        '''
+        Метод создает бомбу рядом с одним из черепов
+        '''
         self.x = ball.x
         self.y = ball.y - 37.5 - 8
         self.Vy = 0
 
     def bomb_fall(self):
+        '''
+        Метод отвечает за падение бомбы вертикально вниз
+        '''
         global bomb_number
         ellipse(screen, (0, 0, 0), (self.x - 2, self.y + 4, 4, 8))
         if self.y >= 700:
@@ -172,6 +180,7 @@ class Ball:
             self.y = self.y - self.Vy
             ellipse(screen, (124, 124, 124), (self.x - 2, self.y + 4, 8, 16))
 
+
 class Gun:
     def __init__(self, a, l, x):
         self.a = a
@@ -180,7 +189,8 @@ class Gun:
 
     def draw_gun(self):
         '''
-        Рисует пушку, направленную на курсор мыши
+        Рисует пушку, у которой основание дула имеет горизонтальную координату х.
+        Само дуло наклонено на угол а против часовой стрелки относительно горизонтальной оси
         '''
         polygon(screen, GREEN, [(self.x - 50, 680), (self.x + 50, 680), (self.x + 50, 660), (self.x - 50, 660)])
         cosa = self.a/np.abs(self.a)*1/(self.a**2 + 1)**0.5
@@ -195,10 +205,81 @@ class Gun:
                                  (self.x + h*(cosa - sina)/2**0.5, 680 - h*(sina + cosa)/2**0.5)])
 
     def bomb_explosion(self, ball):
+        '''
+        Метод проверяет, не попала ли бомба в пушку игрока. При попадании игра завершается
+        '''
         global time_live
         if self.x - 50 <= ball.x and self.x + 50 >= ball.x and ball.y >= 668:
-            print('Вы взорваны. Окончательно и безповоротно')
+            print('Вы взорваны. Окончательно и бесповоротно')
             time_live = 0
+
+
+class Enemy_Gun(Gun):
+    def __init__(self, a, l, x, color):
+        super().__init__(a, l, x)
+        self.color = color
+
+    def draw_enemy(self, Gun):
+        '''
+        Метод рисует вражеский танк, нацеленный на танк игрока
+        '''
+        if self.color == BLACK:
+            pass
+        else:
+            polygon(screen, self.color, [(self.x - 50, 680), (self.x + 50, 680), (self.x + 50, 660), (self.x - 50, 660)])
+            if (self.x - Gun.x)/450 - 1 >= -0.01:
+                self.x = self.x - 1
+                self.a = np.pi/4
+            else:
+                self.a = 0.5*np.arcsin((self.x - Gun.x)/450)
+            polygon(screen, self.color, [(self.x + h*np.cos(5*np.pi/4 - self.a), 680 - h * np.sin(-self.a + 5*np.pi/4)),
+                                         (self.x + h*np.cos(-self.a + 5*np.pi/4) - self.l*np.cos(self.a),
+                                         680 - h*np.sin(-self.a + 5*np.pi/4) - self.l * np.sin(self.a)),
+                                         (self.x + h*np.cos(-self.a + 3*np.pi/4) - self.l*np.cos(self.a),
+                                         680 - h*np.sin(-self.a + 3*np.pi/4) - self.l * np.sin(self.a)),
+                                         (self.x + h*np.cos(-self.a + 3*np.pi/4), 680 - h*np.sin(-self.a + 3*np.pi/4))])
+
+    def enemy_snaryad(self):
+        '''
+        Метод отвечает за движение снаряда, выпущенного вражеским танком
+        '''
+        global enemy_time
+        if self.color != BLACK:
+            pos_x = self.x - (self.l + 10 + 15*enemy_time)*np.cos(self.a)
+            pos_y = 680 - (self.l + 10 + 15*enemy_time)*np.sin(self.a) - 0.25*enemy_time**2
+            circle(screen, BLACK, (pos_x, pos_y), 10)
+            enemy_time = enemy_time + 1
+            pos_x = self.x - (self.l + 10 + 15 * enemy_time) * np.cos(self.a)
+            pos_y = 680 - (self.l + 10 + 15 * enemy_time) * np.sin(self.a) + 0.35*enemy_time ** 2
+            circle(screen, (124, 124, 124), (pos_x, pos_y), 10)
+
+    def snaryad_explosion(self, Gun, enemy_time):
+        '''
+        Метод проверяет, попал ли вражеский снаряд в танк игрока.
+        В случае попадания время жизни немного уменьшается
+        '''
+        global time_live
+        pos_x = self.x - (self.l + 10 + 15 * enemy_time) * np.cos(self.a)
+        pos_y = 680 - (self.l + 10 + 15 * enemy_time) * np.sin(self.a) + 0.35 * enemy_time ** 2
+        if np.abs(pos_y - 670) <= 10 and np.abs(pos_x - Gun.x) <= 50:
+            print('Вас подбили. Времени жизни стало меньше')
+            time_live = time_live - 10
+
+    def enemy_destroy(self, ball):
+        '''
+        Метод проверяет, попал ли снаряд игрока по вражескому танку.
+        При попадании вражеский танк исчезает из игры
+        '''
+        global score, time_live, enemy_bomb_number
+        if np.abs(ball.x - self.x) <= 100 and np.abs(ball.y - 670) <= 30:
+            print('Враг уничтожен!')
+            score = score + 75
+            time_live = time_live + 100
+            if time_live >= 347:
+                time_live = 347
+            enemy_bomb_number = -1
+            self.x = 900
+            self.color = BLACK
 
 
 ball_one = Ball(randint(200, 850), randint(100, 650), randint(-15, 15), randint(-15, 15), randint(10, 20), COLORS[randint(0, 5)])
@@ -210,6 +291,7 @@ snaryad = Ball(300, 300, 0, 0, 1, (0, 0, 0))
 LIST_BALLS = [ball_one, ball_two]
 LIST_SMERTS = [Smert_one, Smert_two]
 Pushka = Gun(0, 20, 450)
+Enemy = Enemy_Gun(np.pi/4, 50*2**0.5, 750, YELLOW)
 
 pygame.display.update()
 clock = pygame.time.Clock()
@@ -251,14 +333,25 @@ while not finished:
         x = x_pushka
         Pushka = Gun(a, l, x)
     Pushka.draw_gun()
+    Enemy.draw_enemy(Pushka)
+    Enemy.enemy_destroy(snaryad)
+    p = randint(-20, 20)
+    if p == 0 and enemy_bomb_number == 0:
+        enemy_bomb_number = 1
+    if enemy_time <= 50 and enemy_bomb_number == 1:
+        Enemy.enemy_snaryad()
+        Enemy.snaryad_explosion(Pushka, enemy_time)
+    else:
+        enemy_time = 0
+        enemy_bomb_number = 0
     if ready == 1:
-        l = l + 2
+        l = l + 1
         if l >= 100:
             l = 99
-        v = v + 2
+        v = v + 1
         fly = 0
     angle = angle + dviz_dulo*np.pi/180
-    if x_pushka >= 50 and x_pushka <= 850:
+    if (x_pushka) >= 50 and (x_pushka <= 480):
         x_pushka = x_pushka + dviz_pushka*2
     else:
         x_pushka = x_pushka + (450 - x_pushka)/np.abs(450 - x_pushka)
@@ -309,7 +402,7 @@ while not finished:
     if time_live <= 0:
         finished = True
         print('Игра закончена. Ваш результат: ', score)
-        if score >= Results[9] and score < Results[0]:
+        if (score >= Results[9]) and score < Results[0]:
             for i in range(4):
                 Stroka[i] = Stroka[i].rstrip()
                 print(Stroka[i], file=out)
